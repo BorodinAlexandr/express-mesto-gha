@@ -11,6 +11,9 @@ router.get('/', getUsers);
 router.get('/:userId', getUser);
 router.post('/', createUser);
 router.patch('/me', changeUserInfo);
-router.post('/me/avatar', changeUserAvatar);
+router.patch('/me/avatar', changeUserAvatar);
+router.get('*', (req, res) => {
+  res.send(res.status(404).send({ message: '404 not found' }));
+});
 
 module.exports = router;

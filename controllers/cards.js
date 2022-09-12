@@ -13,10 +13,14 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.id)
-    .then((card) => res.send({ data: card }))
+  Card.findByIdAndDelete(req.params.id).orFail(() => { throw new Error('NotFound'); })
+    .then((card) => {
+      console.log(card);
+      res.send({ card });
+    })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      console.log(err);
+      if (err.name === 'NotFound') {
         res.status(404).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
@@ -46,13 +50,15 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
+      if (card === null) {
+        res.status(404).send({ message: 'Карточки не существует' });
+        return;
+      }
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -66,13 +72,15 @@ module.exports.dislikeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
+      if (card === null) {
+        res.status(404).send({ message: 'Карточки не существует' });
+        return;
+      }
       res.send(card);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
       }

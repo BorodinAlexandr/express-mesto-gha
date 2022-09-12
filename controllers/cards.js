@@ -15,12 +15,12 @@ module.exports.getCards = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.id).orFail(() => { throw new Error('NotFound'); })
     .then((card) => {
-      console.log(card);
-      res.send({ card });
+      res.status(200).send({ card });
     })
     .catch((err) => {
-      console.log(err);
       if (err.name === 'NotFound') {
+        res.status(400).send({ message: err.message });
+      } else if (err.name === 'CastError') {
         res.status(404).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
@@ -32,7 +32,8 @@ module.exports.createCard = (req, res) => {
   const { name, link, owner } = req.body;
   Card.create({ name, link, owner })
     .then((card) => {
-      res.send(card);
+      console.log(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -54,7 +55,7 @@ module.exports.likeCard = (req, res) => {
         res.status(404).send({ message: 'Карточки не существует' });
         return;
       }
-      res.send(card);
+      res.status(200).send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -76,7 +77,7 @@ module.exports.dislikeCard = (req, res) => {
         res.status(404).send({ message: 'Карточки не существует' });
         return;
       }
-      res.send(card);
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {

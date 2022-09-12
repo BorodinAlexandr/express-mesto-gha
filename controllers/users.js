@@ -14,10 +14,17 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (user === null) {
+        res.status(404).send({ message: 'Пользователя не существует' });
+        return;
+      }
+      res.send({ data: user });
+    })
     .catch((err) => {
+      console.log(err);
       if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
+        res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
       }
@@ -41,7 +48,11 @@ module.exports.createUser = (req, res) => {
 
 module.exports.changeUserInfo = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { name, about } }, // убрать _id из массива
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       res.send(user);
     })
@@ -58,7 +69,11 @@ module.exports.changeUserInfo = (req, res) => {
 
 module.exports.changeUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { avatar } }, // убрать _id из массива
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       res.send(user);
     })

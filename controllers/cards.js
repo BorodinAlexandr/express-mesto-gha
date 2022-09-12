@@ -13,7 +13,24 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.id).orFail(() => { throw new Error('NotFound'); })
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      Card.findByIdAndDelete(card._id)
+        .then((response) => {
+          res.status(200).send({ response });
+        });
+    })
+    .catch((err) => {
+      if (err.name === 'NotFound') {
+        res.status(400).send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(404).send({ message: err.message });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
+    });
+/*   Card.findByIdAndDelete(req.params.id)
+    .orFail(() => { throw new Error('NotFound'); })
     .then((card) => {
       res.status(200).send({ card });
     })
@@ -25,14 +42,13 @@ module.exports.deleteCard = (req, res) => {
       } else {
         res.status(500).send({ message: err.message });
       }
-    });
+    }); */
 };
 
 module.exports.createCard = (req, res) => {
   const { name, link, owner } = req.body;
   Card.create({ name, link, owner })
     .then((card) => {
-      console.log(card);
       res.status(200).send(card);
     })
     .catch((err) => {

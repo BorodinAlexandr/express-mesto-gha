@@ -24,6 +24,10 @@ app.use((req, res, next) => {
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+app.patch('*', (req, res) => {
+  res.status(404).send({ message: 'Что-то пошло не так...' });
+});
+
 app.listen(PORT, () => {
   /* console.log(PORT);
   console.log(BASE_PATH); */

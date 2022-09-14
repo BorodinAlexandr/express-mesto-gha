@@ -60,7 +60,7 @@ module.exports.changeUserInfo = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
@@ -82,7 +82,7 @@ module.exports.changeUserAvatar = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });

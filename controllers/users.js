@@ -4,12 +4,8 @@ const { ERROR_CODES } = require('../constants/errors');
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      if (err.name === 'ReferenceError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
-      } else {
-        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
-      }
+    .catch(() => {
+      res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
     });
 };
 
@@ -24,7 +20,7 @@ module.exports.getUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректный id' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
@@ -39,7 +35,7 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
@@ -55,13 +51,14 @@ module.exports.changeUserInfo = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODES.notFound).send({ message: 'Неправильный запрос' });
+        res.status(ERROR_CODES.notFound).send({ message: 'Некорректный id' });
+        return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
@@ -77,13 +74,14 @@ module.exports.changeUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODES.notFound).send({ message: 'Неправильный запрос' });
+        res.status(ERROR_CODES.notFound).send({ message: 'Некорректный id' });
+        return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
       } else {
         res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }

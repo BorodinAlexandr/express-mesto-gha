@@ -1,49 +1,34 @@
 const Card = require('../models/card');
+const { ERROR_CODES } = require('../constants/errors');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+      if (err.name === 'ReferenceError') {
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findById(req.params.cardId)
+  Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
-      Card.findByIdAndDelete(card._id)
-        .then((response) => {
-          res.status(200).send({ response });
-        });
-    })
-    .catch((err) => {
-      console.log(err.name);
-      if (err.name === 'TypeError') {
-        res.status(404).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        res.status(500).send({ message: err.message });
+      if (card === null) {
+        res.status(ERROR_CODES.notFound).send({ message: 'Карточки не существует' });
+        return;
       }
-    });
-/*   Card.findByIdAndDelete(req.params.id)
-    .orFail(() => { throw new Error('NotFound'); })
-    .then((card) => {
       res.status(200).send({ card });
     })
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        res.status(400).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
-    }); */
+    });
 };
 
 module.exports.createCard = (req, res) => {
@@ -51,15 +36,13 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: userId })
     .then((card) => {
-      /* console.log(card); */
       res.status(200).send(card);
     })
     .catch((err) => {
-      /* console.log(err); */
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -67,21 +50,21 @@ module.exports.createCard = (req, res) => {
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => {
       if (card === null) {
-        res.status(404).send({ message: 'Карточки не существует' });
+        res.status(ERROR_CODES.notFound).send({ message: 'Карточки не существует' });
         return;
       }
       res.status(200).send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -89,21 +72,21 @@ module.exports.likeCard = (req, res) => {
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } }, // убрать _id из массива
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => {
       if (card === null) {
-        res.status(404).send({ message: 'Карточки не существует' });
+        res.status(ERROR_CODES.notFound).send({ message: 'Карточки не существует' });
         return;
       }
       res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };

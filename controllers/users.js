@@ -1,13 +1,14 @@
 const User = require('../models/user');
+const { ERROR_CODES } = require('../constants/errors');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+      if (err.name === 'ReferenceError') {
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -16,16 +17,16 @@ module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (user === null) {
-        res.status(404).send({ message: 'Пользователя не существует' });
+        res.status(ERROR_CODES.notFound).send({ message: 'Пользователя не существует' });
         return;
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: err.message });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -38,9 +39,9 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        res.status(ERROR_CODES.badRequest).send({ message: 'Неправильный запрос' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -53,15 +54,16 @@ module.exports.changeUserInfo = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
+      if (!user) {
+        res.status(ERROR_CODES.notFound).send({ message: 'Неправильный запрос' });
+      }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };
@@ -74,15 +76,16 @@ module.exports.changeUserAvatar = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
+      if (!user) {
+        res.status(ERROR_CODES.notFound).send({ message: 'Неправильный запрос' });
+      }
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(404).send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(ERROR_CODES.badRequest).send({ message: 'Пользователя не существует' });
       } else {
-        res.status(500).send({ message: err.message });
+        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
       }
     });
 };

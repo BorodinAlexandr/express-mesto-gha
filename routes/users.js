@@ -4,13 +4,14 @@ const {
   getUsers,
   getUser,
   createUser,
+  login,
   changeUserInfo,
   changeUserAvatar,
 } = require('../controllers/users');
 
 router.get('/', getUsers);
 router.get('/me', getUser);
-router.post('/', celebrate({
+router.post('/signup', celebrate({
   body: Joi.object().keys({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
@@ -21,7 +22,28 @@ router.post('/', celebrate({
     }).unknown(true),
   }),
 }), createUser);
-router.patch('/me', changeUserInfo);
-router.patch('/me/avatar', changeUserAvatar);
+router.post('/signin', celebrate({
+  body: Joi.object().keys({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }),
+  }),
+}), login);
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+    }),
+  }),
+}), changeUserInfo);
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    body: Joi.object().keys({
+      avatar: Joi.string().min(2),
+    }),
+  }),
+}), changeUserAvatar);
 
 module.exports = router;

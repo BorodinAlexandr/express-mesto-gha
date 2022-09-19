@@ -1,48 +1,78 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_CODES } = require('../constants/errors');
+const BadRequestError = require('../errors/badRequest');
+const NotFoundError = require('../errors/notFound');
+const InternalServerError = require('../errors/serverError');
+const NewUserCreateError = require('../errors/newUserError');
+const NotValidTokenError = require('../errors/notValidToken');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch(() => {
-      res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
-    });
+      throw new InternalServerError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (user === null) {
-        res.status(ERROR_CODES.notFound).send({ message: 'Пользователя не существует' });
-        return;
+        throw new NotFoundError('Пользователя не существует');
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректный id' });
+        throw new BadRequestError('Некорректный id');
       } else {
-        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
+        throw new InternalServerError('Произошла ошибка');
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => {
-      res.send(user);
+      res.status(201).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
+      if (err.code === 11000) {
+        throw new NewUserCreateError('Пользователь с такой почтой уже существует');
+      } else if (err.name === 'ValidationError') {
+        throw new BadRequestError('Некорректные данные');
       } else {
-        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
+        throw new InternalServerError('Произошла ошибка');
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.changeUserInfo = (req, res) => {
+module.exports.login = (req, res, next) => {
+  const { email } = req.body;
+
+  return User.findUserByCredentials(email).select('+password')
+    .then((user) => {
+      res.send({
+        token: jwt.sign({ _id: user._id }, 'Boris-Razor', { expiresIn: '7d' }),
+      });
+    })
+    .catch(() => {
+      throw new NotValidTokenError('Произошла ошибка');
+    })
+    .catch(next);
+};
+
+module.exports.changeUserInfo = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -51,21 +81,21 @@ module.exports.changeUserInfo = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODES.notFound).send({ message: 'Некорректный id' });
-        return;
+        throw new NotFoundError('Некорректный id');
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
+        throw new BadRequestError('Некорректные данные');
       } else {
-        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
+        throw new InternalServerError('Произошла ошибка');
       }
-    });
+    })
+    .catch(next);
 };
 
-module.exports.changeUserAvatar = (req, res) => {
+module.exports.changeUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -74,16 +104,16 @@ module.exports.changeUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODES.notFound).send({ message: 'Некорректный id' });
-        return;
+        throw new NotFoundError('Некорректный id');
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODES.badRequest).send({ message: 'Некорректные данные' });
+        throw new BadRequestError('Некорректные данные');
       } else {
-        res.status(ERROR_CODES.internalServerError).send({ message: 'Произошла ошибка' });
+        throw new InternalServerError('Произошла ошибка');
       }
-    });
+    })
+    .catch(next);
 };

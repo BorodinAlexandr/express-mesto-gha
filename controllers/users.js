@@ -46,6 +46,7 @@ module.exports.createUser = (req, res, next) => {
       res.status(201).send(user);
     })
     .catch((err) => {
+      console.log(err);
       if (err.code === 11000) {
         throw new NewUserCreateError('Пользователь с такой почтой уже существует');
       } else if (err.name === 'ValidationError') {
@@ -58,9 +59,9 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
 
-  return User.findUserByCredentials(email).select('+password')
+  return User.findUserByCredentials(email, password).select('+password')
     .then((user) => {
       res.send({
         token: jwt.sign({ _id: user._id }, 'Boris-Razor', { expiresIn: '7d' }),

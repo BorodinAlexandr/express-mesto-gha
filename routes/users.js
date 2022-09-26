@@ -3,15 +3,15 @@ const { celebrate, Joi } = require('celebrate');
 const {
   getUsers,
   getUser,
-  createUser,
-  login,
+  /*   createUser,
+  login, */
   changeUserInfo,
   changeUserAvatar,
 } = require('../controllers/users');
 
 router.get('/', getUsers);
 router.get('/me', getUser);
-router.post('/signup', celebrate({
+/* router.post('/signup', celebrate({
   body: Joi.object().keys({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
@@ -29,7 +29,7 @@ router.post('/signin', celebrate({
       password: Joi.string().required().min(8),
     }),
   }),
-}), login);
+}), login); */
 router.patch('/me', celebrate({
   body: Joi.object().keys({
     body: Joi.object().keys({

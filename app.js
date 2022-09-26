@@ -45,9 +45,10 @@ app.patch('*', (req, res) => {
 
 app.use(errors());
 
-app.use((err, req, res/* , next */) => {
-  console.log(err);
+app.use((err, req, res, next) => {
+/*   console.log(err); */
   res.status(err.statusCode).send({ message: err.message });
+  next();
 });
 
 app.listen(PORT);

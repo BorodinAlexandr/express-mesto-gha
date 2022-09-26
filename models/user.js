@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
       message: 'Неправильный формат ссылки на аватар',
     },
   },
-});
+}, { toObject: { useProjection: true } });
 
 userSchema.path('avatar').validate((val) => {
   const urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;

@@ -46,7 +46,6 @@ module.exports.createUser = (req, res, next) => {
       res.status(201).send(user.toObject());
     })
     .catch((err) => {
-      console.log(err);
       if (err.code === 11000) {
         throw new NewUserCreateError('Пользователь с такой почтой уже существует');
       } else if (err.name === 'ValidationError') {
@@ -60,17 +59,37 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-
-  return User.findUserByCredentials(email, password).select('+password')
+  User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        throw new NotValidTokenError('Такого пользователя не существует!');
+      }
       res.send({
         token: jwt.sign({ _id: user._id }, 'Boris-Razor', { expiresIn: '7d' }),
       });
     })
+    .catch(next);
+/*   User.findOne(email, password).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new NotValidTokenError('Неправильные почта или пароль');
+      }
+
+      bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new NotValidTokenError('Неправильные почта или пароль');
+          }
+
+          res.send({
+            token: jwt.sign({ _id: user._id }, 'Boris-Razor', { expiresIn: '7d' }),
+          });
+        });
+    })
     .catch(() => {
       throw new NotValidTokenError('Произошла ошибка');
     })
-    .catch(next);
+    .catch(next); */
 };
 
 module.exports.changeUserInfo = (req, res, next) => {

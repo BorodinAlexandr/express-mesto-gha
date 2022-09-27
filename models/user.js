@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const isEmail = require('validator/lib/isEmail');
 const isURL = require('validator/lib/isURL');
+const NotValidTokenError = require('../errors/notValidToken');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -39,6 +41,24 @@ const userSchema = new mongoose.Schema({
     },
   },
 }, { toObject: { useProjection: true } });
+
+userSchema.statics.findUserByCredentials = function (email, password) {
+  return this.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new NotValidTokenError('Такого пользователя не существует!');
+      }
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new NotValidTokenError('Неправильные почта или пароль');
+          }
+
+          return user;
+        });
+    });
+};
 
 userSchema.path('avatar').validate((val) => {
   const urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;

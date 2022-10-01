@@ -9,9 +9,11 @@ const {
 const { urlRegex } = require('../constants/regEx');
 
 router.get('/', getUsers);
+
 router.get('/me', getUser);
+
 router.get('/:userId', celebrate({
-  headers: Joi.object().keys({
+  params: Joi.object().keys({
     userId: Joi.string().alphanum().length(24),
   }).unknown(true),
 }), getUser);
@@ -22,6 +24,7 @@ router.patch('/me', celebrate({
     about: Joi.string().min(2).max(30),
   }),
 }), changeUserInfo);
+
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().min(2).regex(urlRegex),

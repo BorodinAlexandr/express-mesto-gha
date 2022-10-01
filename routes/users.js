@@ -39,7 +39,7 @@ router.patch('/me', celebrate({
 }), changeUserInfo);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().min(2),
+    avatar: Joi.string().min(2).uri(),
   }),
 }), changeUserAvatar);
 

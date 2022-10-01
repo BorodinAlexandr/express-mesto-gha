@@ -17,7 +17,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.body.userId)
+  User.findById(req.user._id)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError('Пользователя не существует');
@@ -93,7 +93,6 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.changeUserInfo = (req, res, next) => {
-  console.log(req.body);
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,

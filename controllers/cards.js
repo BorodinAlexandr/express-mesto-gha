@@ -2,6 +2,7 @@ const Card = require('../models/card');
 const BadRequestError = require('../errors/badRequest');
 const NotFoundError = require('../errors/notFound');
 const InternalServerError = require('../errors/serverError');
+const NotForbiddenError = require('../errors/notForbidden');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
@@ -13,21 +14,30 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
+  console.log(req.user._id);
   Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
+      console.log(card);
       if (card === null) {
         throw new NotFoundError('Карточки не существует');
+      }
+      if (req.user._id !== card.owner) {
+        throw new NotForbiddenError('Нет доступа');
       }
       res.send({ card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new BadRequestError('Некорректные данные');
-      } else {
+      } else if (err.statusCode !== 404 && err.statusCode !== 403) {
         throw new InternalServerError('Произошла ошибка');
+      } else {
+        next(err);
       }
     })
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -62,8 +72,10 @@ module.exports.likeCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new BadRequestError('Некорректные данные');
-      } else {
+      } else if (err.statusCode !== 404) {
         throw new InternalServerError('Произошла ошибка');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -84,8 +96,10 @@ module.exports.dislikeCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new BadRequestError('Некорректные данные');
-      } else {
+      } else if (err.statusCode !== 404) {
         throw new InternalServerError('Произошла ошибка');
+      } else {
+        next(err);
       }
     })
     .catch(next);

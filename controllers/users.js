@@ -17,6 +17,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
+  console.log(req.path);
   User.findById(req.user._id)
     .then((user) => {
       if (user === null) {

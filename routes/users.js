@@ -5,6 +5,7 @@ const {
   getUser,
   changeUserInfo,
   changeUserAvatar,
+  getUserById,
 } = require('../controllers/users');
 const { urlRegex } = require('../constants/regEx');
 
@@ -16,7 +17,7 @@ router.get('/:userId', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().alphanum().length(24),
   }).unknown(true),
-}), getUser);
+}), getUserById);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({

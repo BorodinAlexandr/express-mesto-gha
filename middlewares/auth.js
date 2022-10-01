@@ -16,7 +16,6 @@ module.exports = (req, res, next) => {
   }
 
   const token = extractBearerToken(authorization);
-  console.log(token);
   let payload;
 
   try {

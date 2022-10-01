@@ -3,7 +3,6 @@ const bcrypt = require('bcryptjs');
 const isEmail = require('validator/lib/isEmail');
 const isURL = require('validator/lib/isURL');
 const NotValidTokenError = require('../errors/notValidToken');
-const urlRegex = require('../constants/regEx');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -61,6 +60,9 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     });
 };
 
-userSchema.path('avatar').validate((val) => urlRegex.test(val), 'Неправильная ссылка');
+userSchema.path('avatar').validate((val) => {
+  const urlRegex = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/;
+  return urlRegex.test(val);
+}, 'Неправильная ссылка');
 
 module.exports = mongoose.model('user', userSchema);

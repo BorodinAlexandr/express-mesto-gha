@@ -8,6 +8,7 @@ const {
   changeUserInfo,
   changeUserAvatar,
 } = require('../controllers/users');
+const { urlRegex } = require('../constants/regEx');
 
 router.get('/', getUsers);
 router.get('/me', getUser);
@@ -39,7 +40,7 @@ router.patch('/me', celebrate({
 }), changeUserInfo);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().min(2),
+    avatar: Joi.string().min(2).regex(urlRegex),
   }),
 }), changeUserAvatar);
 

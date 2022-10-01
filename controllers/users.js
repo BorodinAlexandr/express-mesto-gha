@@ -17,8 +17,7 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  console.log(req.path);
-  User.findById(req.user._id)
+  User.findById(req.user._id || req.params.userId)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError('Пользователя не существует');

@@ -14,14 +14,12 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  console.log(req.user._id);
   Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
-      console.log(card);
       if (card === null) {
         throw new NotFoundError('Карточки не существует');
       }
-      if (req.user._id !== card.owner) {
+      if (req.user._id === card.owner.toString()) {
         throw new NotForbiddenError('Нет доступа');
       }
       res.send({ card });

@@ -10,7 +10,12 @@ const { urlRegex } = require('../constants/regEx');
 
 router.get('/', getUsers);
 router.get('/me', getUser);
-router.get('/:userId', getUser);
+router.get('/:userId', celebrate({
+  headers: Joi.object().keys({
+    userId: Joi.string().alphanum().length(24),
+  }).unknown(true),
+}), getUser);
+
 router.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),

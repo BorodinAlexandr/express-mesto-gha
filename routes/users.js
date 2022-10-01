@@ -11,6 +11,7 @@ const {
 
 router.get('/', getUsers);
 router.get('/me', getUser);
+router.get('/:id', getUser);
 /* router.post('/signup', celebrate({
   body: Joi.object().keys({
     body: Joi.object().keys({
@@ -32,17 +33,13 @@ router.post('/signin', celebrate({
 }), login); */
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
-    }),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
   }),
 }), changeUserInfo);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    body: Joi.object().keys({
-      avatar: Joi.string().min(2),
-    }),
+    avatar: Joi.string().min(2),
   }),
 }), changeUserAvatar);
 

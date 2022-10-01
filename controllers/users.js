@@ -17,7 +17,8 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.user._id || req.params.userId)
+  console.log(req.user._id);
+  User.findById(req.params.userId)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError('Пользователя не существует');
@@ -27,8 +28,10 @@ module.exports.getUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new BadRequestError('Некорректный id');
-      } else {
+      } else if (err.statusCode !== 404) {
         throw new InternalServerError('Произошла ошибка');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -69,27 +72,6 @@ module.exports.login = (req, res, next) => {
       });
     })
     .catch(next);
-/*   User.findOne(email, password).select('+password')
-    .then((user) => {
-      if (!user) {
-        throw new NotValidTokenError('Неправильные почта или пароль');
-      }
-
-      bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            throw new NotValidTokenError('Неправильные почта или пароль');
-          }
-
-          res.send({
-            token: jwt.sign({ _id: user._id }, 'Boris-Razor', { expiresIn: '7d' }),
-          });
-        });
-    })
-    .catch(() => {
-      throw new NotValidTokenError('Произошла ошибка');
-    })
-    .catch(next); */
 };
 
 module.exports.changeUserInfo = (req, res, next) => {
